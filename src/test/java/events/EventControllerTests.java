@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.hateoas.MediaTypes;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
@@ -18,14 +19,13 @@ import java.time.LocalDateTime;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @RunWith(SpringRunner.class)
 @WebMvcTest
 /*
 Repository 를 빈으로 등록 하지 않고,
-Web용만 등록 해줌.
+Web 용 만 등록 해줌.
  */
 public class EventControllerTests {
     @Autowired
@@ -60,7 +60,7 @@ public class EventControllerTests {
                 .limitOfEnrollment(100)
                 .location("강남역 D2 스타텁 팩토리")
                 .build();
-        event.setId(10);//Id 설
+        event.setId(10);//Id 설정
         Mockito.when(eventRepository.save(event)).thenReturn(event);
         /*
         eventRepository의 save()가 호출 되면 event를 리턴하라.
@@ -74,8 +74,10 @@ public class EventControllerTests {
         )
                 .andDo(print())
                 .andExpect(status().isCreated())
-                .andExpect( jsonPath("id").exists());
+                .andExpect( jsonPath("id").exists())
                 //id가 있는지 확인
+                .andExpect(header().exists(HttpHeaders.LOCATION))
+                .andExpect(header().string(HttpHeaders.CONTENT_TYPE,MediaTypes.HAL_JSON_UTF8_VALUE));
     }
 
 }
